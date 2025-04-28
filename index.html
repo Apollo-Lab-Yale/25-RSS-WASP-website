@@ -175,9 +175,6 @@
 
 <section class="section">
   <div class="container is-max-desktop">
-
-
-
     <!-- Abstract. -->
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
@@ -284,8 +281,7 @@
             We have a new input that needs to be solved for derivative.
           </p>
           <img src="assets/clips/gifs/1.x1->x2.gif"
-               class="interpolation-image"
-               alt="Interpolate start reference image."/>
+               class="interpolation-image"/>
         </div>
         <h3 class="title is-4">Step 2</h3>
         <div class="content has-text-justified">
@@ -293,8 +289,7 @@
             Select an affine space for computing a single JVP.
           </p>
           <img src="assets/clips/gifs/2.select_space.gif"
-               class="interpolation-image"
-               alt="Interpolate start reference image."/>
+               class="interpolation-image"/>
         </div>
         <h3 class="title is-4">Step 3</h3>
         <div class="content has-text-justified">
@@ -302,8 +297,7 @@
             Compute the JVP. The true derivative lies somewhere in this affine space.
           </p>
           <img src="assets/clips/gifs/3.move-space.gif"
-               class="interpolation-image"
-               alt="Interpolate start reference image."/>
+               class="interpolation-image"/>
         </div>
         <h3 class="title is-4">Step 4</h3>
         <div class="content has-text-justified">
@@ -311,8 +305,7 @@
             Perform constrained optimization to find the closest point on the current space to other affine spaces.
           </p>
           <img src="assets/clips/gifs/4.find-D.gif"
-               class="interpolation-image"
-               alt="Interpolate start reference image."/>
+               class="interpolation-image"/>
         </div>
         <h3 class="title is-4">Last step</h3>
         <div class="content has-text-justified">
@@ -320,8 +313,7 @@
             Update the entire F matrix.
           </p>
           <img src="assets/clips/gifs/5.move-others.gif"
-               class="interpolation-image"
-               alt="Interpolate start reference image."/>
+               class="interpolation-image"/>
         </div>
         <h3 class="title is-4">The next derivative</h3>
         <div class="content has-text-justified">
@@ -329,8 +321,7 @@
             We can repeat the above steps to compute the next derivative.
           </p>
           <img src="assets/clips/gifs/6.x2.gif"
-               class="interpolation-image"
-               alt="Interpolate start reference image."/>
+               class="interpolation-image">
         </div>
         <h3 class="title is-4">And the next</h3>
         <div class="content has-text-justified">
@@ -338,11 +329,35 @@
 
           </p>
           <img src="assets/clips/gifs/7.x3.gif"
-               class="interpolation-image"
-               alt="Interpolate start reference image."/>
+               class="interpolation-image"/>
+        </div>
+        <h3 class="title is-4">And the next</h3>
+        <div class="content has-text-justified">
+          <p>
+
+          </p>
+          <img src="assets/clips/gifs/8.x4.gif"
+               class="interpolation-image"/>
+        </div>
+        <h3 class="title is-4">Error correction</h3>
+        <div class="content has-text-justified">
+          <p>
+            When our error detector asserts a high possible error, we repeat the whole process for another JVP.
+          </p>
+          <img src="assets/clips/gifs/9.-error-correction.gif"
+               class="interpolation-image"/>
         </div>
         <!--/ Interpolating. -->
 
+        <h2 class="title is-3">Results</h2>
+        <p>
+          Our method significantly improves the performance of derivative computation on small to medium-sized functions, i.e., functions with approximately fewer than 500 combined inputs and outputs. Furthermore, we show that this method can be effectively applied in a robotics optimization context.
+        </p><br/>
+        <div class="publication-video">
+          <video autoplay muted loop playsinline controls style="width:100%; height:auto;">
+            <source src="assets/eval2.mov" type="video/mp4">
+          </video>
+        </div>
         <!-- Re-rendering. -->
 <!--        <h3 class="title is-4">Re-rendering the input video</h3>-->
 <!--        <div class="content has-text-justified">-->
