@@ -280,6 +280,18 @@
           <p>
             We have a new input that needs to be solved for derivative.
           </p>
+          <pre><code class="language-rust" style="color: #24292e;">
+            <span style="color: #d73a49;">fn</span> <span style="color: #24292e;">main</span>() {
+              <span style="color: #d73a49;">let</span> x1: <span style="color: #005cc5;">f64</span> = <span
+                  style="color: #005cc5;">2.0</span>;
+              <span style="color: #d73a49;">let</span> x2: <span style="color: #005cc5;">f64</span> = <span
+                  style="color: #005cc5;">3.0</span>;
+              
+              <span style="color: #6a737d;">// Calculate derivative between x1 and x2</span>
+              <span style="color: #d73a49;">let</span> derivative = (x2 - x1) / <span style="color: #005cc5;">1.0</span>;
+              <span style="color: #24292e;">println!</span>(<span style="color: #032f62;">"Derivative: {}"</span>, derivative);
+            }
+          </code></pre>
           <img src="assets/clips/gifs/1.x1->x2.gif"
                class="interpolation-image"/>
         </div>
@@ -350,9 +362,16 @@
         <!--/ Interpolating. -->
 
         <h2 class="title is-3">Results</h2>
+        <h3 class="title is-4">Evaluation 1</h3>
         <p>
-          Our method significantly improves the performance of derivative computation on small to medium-sized functions, i.e., functions with approximately fewer than 500 combined inputs and outputs. Furthermore, we show that this method can be effectively applied in a robotics optimization context.
+          Our method significantly improves the performance of derivative computation on small to medium-sized functions, i.e., functions with approximately fewer than 500 combined inputs and outputs.
         </p><br/>
+        <img src="assets/comparison_plot.jpg"
+             class="interpolation-image"/>
+        <h3 class="title is-4">Evaluation 2</h3>
+        <p>
+          Furthermore, we show that this method can be effectively applied in a robotics optimization context.
+        </p>
         <div class="publication-video">
           <video autoplay muted loop playsinline controls style="width:100%; height:auto;">
             <source src="assets/eval2.mov" type="video/mp4">
