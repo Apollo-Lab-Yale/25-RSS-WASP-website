@@ -55,12 +55,12 @@
             <span class="author-block">
               <a href="https://liangchen.space/">Chen Liang*</a><sup>1</sup>,</span>
             <span class="author-block">
-              <a href="https://pwang649.github.io/">Qian Wang*</a><sup>1</sup>,
+              <a href="https://pwang649.github.io/">Qian Wang*</a><sup>1</sup>
             </span>
           </div>
 
           <div class="is-size-5 publication-authors">
-            <span class="author-block"><sup>1</sup>Yale University</span>
+            <span class="author-block">Yale University</span>
           </div>
           <div class="is-size-5 publication-authors">
             <span class="author-block"><sup>*</sup>Equal Contribution</span>
@@ -131,49 +131,49 @@
 <!--  </div>-->
 <!--</section>-->
 
-<section class="hero is-light is-small">
-  <div class="hero-body">
-    <div class="container">
-      <div id="results-carousel" class="carousel results-carousel">
-      
-        <div class="item item-step1">
-          <video poster="" id="step1" autoplay controls muted loop playsinline height="100%">
-            <source src="./assets/step1.mov"
-                    type="video/mp4">
-          </video>
-        </div>
-        
-        <div class="item item-step2">
-          <video poster="" id="step2" autoplay controls muted loop playsinline height="100%">
-            <source src="./assets/step2.mov"
-                    type="video/mp4">
-          </video>
-        </div>
+<!--<section class="hero is-light is-small">-->
+<!--  <div class="hero-body">-->
+<!--    <div class="container">-->
+<!--      <div id="results-carousel" class="carousel results-carousel">-->
 
-       <div class="item item-step3">
-          <video poster="" id="step3" autoplay controls muted loop playsinline height="100%">
-            <source src="./assets/step3.mov"
-                    type="video/mp4">
-          </video>
-        </div>
-        
-        <div class="item item-step4">
-          <video poster="" id="step4" autoplay controls muted loop playsinline height="100%">
-            <source src="./assets/step4.mov"
-                    type="video/mp4">
-          </video>
-        </div>
-        
-</div>
-    </div>
-  </div>
-</section>
+<!--        <div class="item item-step1">-->
+<!--          <video poster="" id="step1" autoplay controls muted loop playsinline height="100%">-->
+<!--            <source src="./assets/step1.mov"-->
+<!--                    type="video/mp4">-->
+<!--          </video>-->
+<!--        </div>-->
 
+<!--        <div class="item item-step2">-->
+<!--          <video poster="" id="step2" autoplay controls muted loop playsinline height="100%">-->
+<!--            <source src="./assets/step2.mov"-->
+<!--                    type="video/mp4">-->
+<!--          </video>-->
+<!--        </div>-->
+
+<!--       <div class="item item-step3">-->
+<!--          <video poster="" id="step3" autoplay controls muted loop playsinline height="100%">-->
+<!--            <source src="./assets/step3.mov"-->
+<!--                    type="video/mp4">-->
+<!--          </video>-->
+<!--        </div>-->
+
+<!--        <div class="item item-step4">-->
+<!--          <video poster="" id="step4" autoplay controls muted loop playsinline height="100%">-->
+<!--            <source src="./assets/step4.mov"-->
+<!--                    type="video/mp4">-->
+<!--          </video>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</section>-->
 
 
 
 
 
+
+<section class="section">
   <div class="container is-max-desktop">
 
 
@@ -214,25 +214,17 @@
       </div>
     </div>
     <!--/ Abstract. -->
-<!-- Evaluation clip – wider than Abstract but not full-bleed -->
-<div class="container is-max-widescreen">
-  <div class="content has-text-centered mt-5">
-    <video autoplay muted loop playsinline controls style="width:100%; height:auto;">
-      <source src="assets/eval2.mov" type="video/mp4">
-      <source src="assets/eval2.mov" type="video/quicktime">
-      Your browser doesn’t support HTML5 video.
-    </video>
-    <p class="is-size-5 mt-2">Evaluation&nbsp;Clip</p>
-  </div>
-</div>
 
     <!-- Paper video. -->
 <!--    <div class="columns is-centered has-text-centered">-->
 <!--      <div class="column is-four-fifths">-->
 <!--        <h2 class="title is-3">Video</h2>-->
 <!--        <div class="publication-video">-->
-<!--          <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"-->
-<!--                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>-->
+<!--              <video autoplay muted loop playsinline controls style="width:100%; height:auto;">-->
+<!--                <source src="assets/eval2.mov" type="video/mp4">-->
+<!--                <source src="assets/eval2.mov" type="video/quicktime">-->
+<!--                Your browser doesn’t support HTML5 video.-->
+<!--              </video>-->
 <!--        </div>-->
 <!--      </div>-->
 <!--    </div>-->
@@ -241,30 +233,28 @@
 </section>
 
 
-<!--<section class="section">-->
-<!--  <div class="container is-max-desktop">-->
-
+<section class="section">
+  <div class="container is-max-desktop">
+<!--    <h2 class="title is-3">Method</h2>-->
 <!--    <div class="columns is-centered">-->
 
 <!--      &lt;!&ndash; Visual Effects. &ndash;&gt;-->
 <!--      <div class="column">-->
 <!--        <div class="content">-->
-<!--          <h2 class="title is-3">Visual Effects</h2>-->
+<!--          <h3 class="title is-4">Step 1</h3>-->
 <!--          <p>-->
-<!--            Using <i>nerfies</i> you can create fun visual effects. This Dolly zoom effect-->
-<!--            would be impossible without nerfies since it would require going through a wall.-->
+<!--            We have a new input that needs to be solved for derivative.-->
 <!--          </p>-->
-<!--          <video id="dollyzoom" autoplay controls muted loop playsinline height="100%">-->
-<!--            <source src="./static/videos/dollyzoom-stacked.mp4"-->
-<!--                    type="video/mp4">-->
-<!--          </video>-->
+<!--          <img src="assets/clips/gifs/1.x1->x2.gif"-->
+<!--               class="interpolation-image"-->
+<!--               alt="Interpolate start reference image."/>-->
 <!--        </div>-->
 <!--      </div>-->
 <!--      &lt;!&ndash;/ Visual Effects. &ndash;&gt;-->
 
 <!--      &lt;!&ndash; Matting. &ndash;&gt;-->
 <!--      <div class="column">-->
-<!--        <h2 class="title is-3">Matting</h2>-->
+<!--        <h3 class="title is-4">Step 2</h3>-->
 <!--        <div class="columns is-centered">-->
 <!--          <div class="column content">-->
 <!--            <p>-->
@@ -280,48 +270,80 @@
 <!--        </div>-->
 <!--      </div>-->
 <!--    </div>-->
-<!--    &lt;!&ndash;/ Matting. &ndash;&gt;-->
+    <!--/ Matting. -->
 
-<!--    &lt;!&ndash; Animation. &ndash;&gt;-->
-<!--    <div class="columns is-centered">-->
-<!--      <div class="column is-full-width">-->
-<!--        <h2 class="title is-3">Animation</h2>-->
+    <!-- Animation. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Method</h2>
 
-<!--        &lt;!&ndash; Interpolating. &ndash;&gt;-->
-<!--        <h3 class="title is-4">Interpolating states</h3>-->
-<!--        <div class="content has-text-justified">-->
-<!--          <p>-->
-<!--            We can also animate the scene by interpolating the deformation latent codes of two input-->
-<!--            frames. Use the slider here to linearly interpolate between the left frame and the right-->
-<!--            frame.-->
-<!--          </p>-->
-<!--        </div>-->
-<!--        <div class="columns is-vcentered interpolation-panel">-->
-<!--          <div class="column is-3 has-text-centered">-->
-<!--            <img src="./static/images/interpolate_start.jpg"-->
-<!--                 class="interpolation-image"-->
-<!--                 alt="Interpolate start reference image."/>-->
-<!--            <p>Start Frame</p>-->
-<!--          </div>-->
-<!--          <div class="column interpolation-video-column">-->
-<!--            <div id="interpolation-image-wrapper">-->
-<!--              Loading...-->
-<!--            </div>-->
-<!--            <input class="slider is-fullwidth is-large is-info"-->
-<!--                   id="interpolation-slider"-->
-<!--                   step="1" min="0" max="100" value="0" type="range">-->
-<!--          </div>-->
-<!--          <div class="column is-3 has-text-centered">-->
-<!--            <img src="./static/images/interpolate_end.jpg"-->
-<!--                 class="interpolation-image"-->
-<!--                 alt="Interpolation end reference image."/>-->
-<!--            <p class="is-bold">End Frame</p>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--        <br/>-->
-<!--        &lt;!&ndash;/ Interpolating. &ndash;&gt;-->
+        <!-- Interpolating. -->
+        <h3 class="title is-4">Step 1</h3>
+        <div class="content has-text-justified">
+          <p>
+            We have a new input that needs to be solved for derivative.
+          </p>
+          <img src="assets/clips/gifs/1.x1->x2.gif"
+               class="interpolation-image"
+               alt="Interpolate start reference image."/>
+        </div>
+        <h3 class="title is-4">Step 2</h3>
+        <div class="content has-text-justified">
+          <p>
+            Select an affine space for computing a single JVP.
+          </p>
+          <img src="assets/clips/gifs/2.select_space.gif"
+               class="interpolation-image"
+               alt="Interpolate start reference image."/>
+        </div>
+        <h3 class="title is-4">Step 3</h3>
+        <div class="content has-text-justified">
+          <p>
+            Compute the JVP. The true derivative lies somewhere in this affine space.
+          </p>
+          <img src="assets/clips/gifs/3.move-space.gif"
+               class="interpolation-image"
+               alt="Interpolate start reference image."/>
+        </div>
+        <h3 class="title is-4">Step 4</h3>
+        <div class="content has-text-justified">
+          <p>
+            Perform constrained optimization to find the closest point on the current space to other affine spaces.
+          </p>
+          <img src="assets/clips/gifs/4.find-D.gif"
+               class="interpolation-image"
+               alt="Interpolate start reference image."/>
+        </div>
+        <h3 class="title is-4">Last step</h3>
+        <div class="content has-text-justified">
+          <p>
+            Update the entire F matrix.
+          </p>
+          <img src="assets/clips/gifs/5.move-others.gif"
+               class="interpolation-image"
+               alt="Interpolate start reference image."/>
+        </div>
+        <h3 class="title is-4">The next derivative</h3>
+        <div class="content has-text-justified">
+          <p>
+            We can repeat the above steps to compute the next derivative.
+          </p>
+          <img src="assets/clips/gifs/6.x2.gif"
+               class="interpolation-image"
+               alt="Interpolate start reference image."/>
+        </div>
+        <h3 class="title is-4">And the next</h3>
+        <div class="content has-text-justified">
+          <p>
 
-<!--        &lt;!&ndash; Re-rendering. &ndash;&gt;-->
+          </p>
+          <img src="assets/clips/gifs/7.x3.gif"
+               class="interpolation-image"
+               alt="Interpolate start reference image."/>
+        </div>
+        <!--/ Interpolating. -->
+
+        <!-- Re-rendering. -->
 <!--        <h3 class="title is-4">Re-rendering the input video</h3>-->
 <!--        <div class="content has-text-justified">-->
 <!--          <p>-->
@@ -340,14 +362,14 @@
 <!--                    type="video/mp4">-->
 <!--          </video>-->
 <!--        </div>-->
-<!--        &lt;!&ndash;/ Re-rendering. &ndash;&gt;-->
+        <!--/ Re-rendering. -->
 
-<!--      </div>-->
-<!--    </div>-->
-<!--    &lt;!&ndash;/ Animation. &ndash;&gt;-->
+      </div>
+    </div>
+    <!--/ Animation. -->
 
 
-<!--    &lt;!&ndash; Concurrent Work. &ndash;&gt;-->
+    <!-- Concurrent Work. -->
 <!--    <div class="columns is-centered">-->
 <!--      <div class="column is-full-width">-->
 <!--        <h2 class="title is-3">Related Links</h2>-->
@@ -372,10 +394,10 @@
 <!--        </div>-->
 <!--      </div>-->
 <!--    </div>-->
-<!--    &lt;!&ndash;/ Concurrent Work. &ndash;&gt;-->
+    <!--/ Concurrent Work. -->
 
-<!--  </div>-->
-<!--</section>-->
+  </div>
+</section>
 
 
 <section class="section" id="BibTeX">
