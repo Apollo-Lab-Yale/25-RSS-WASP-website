@@ -1,6 +1,6 @@
 # WASP
 
-This is the repository that contains source code for the [WASP website](https://wasp.github.io).
+This is the repository that contains source code for the [WASP website](https://apollo-lab-yale.github.io/25-RSS-WASP-website/).
 
 If you find WASP useful for your work please cite:
 
