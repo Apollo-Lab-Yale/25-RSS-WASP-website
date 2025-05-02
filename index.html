@@ -39,6 +39,7 @@
   <script src="./static/js/bulma-carousel.min.js"></script>
   <script src="./static/js/bulma-slider.min.js"></script>
   <script src="./static/js/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
 
@@ -229,6 +230,29 @@
   </div>
 </section>
 
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Motivation</h2>
+        <div class="content has-text-justified">
+          <p>
+            In optimization scenarios, a <b>sequence</b> of derivates guides to find optimums. What if we can make use of the <b> coherence</b> of the sequence to accelerate the derivate computation at the current input? 
+          </p>
+          <ul>
+            <li>Goal: compute sequence of approximate derivatives of computable function as <b>quickly</b> and <b>accurately</b> as possible</li>
+            <li>Inputs: \(f: \mathbb{R}^n \to \mathbb{R}^m\), and sequence of inputs, \(x_k, x_{k+1}, x_{k+2}, \cdots\)</li>
+            <li>Outputs: a sequence of approximate derivatives at given inputs, \(\hat{\frac{\partial f}{\partial x}}|_{x_{k}}, \hat{\frac{\partial f}{\partial x}}|_{x_{k+1}},\hat{\frac{\partial f}{\partial x}}|_{x_{k+2}} \cdots\)</li>
+            <li>What we achieved: Bt default, derivative computation for each input only requires updating the jacobian-vector product on one tangent direction regardless of the dimension of the function's inputs and outpus. </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 
 <section class="section">
   <div class="container is-max-desktop">
@@ -278,9 +302,9 @@
         <h3 class="title is-4">Step 1</h3>
         <div class="content has-text-justified">
           <p>
-            We have a new input that needs to be solved for derivative.
+            Suppose we are given a new input \(x_1\), and our goal is to approximate a new derivative matrix  \(\frac{\partial f}{\partial x}|_{x_{1}}\). The groud truth derivative is represented by the shifted yellow dot.
           </p>
-          <pre><code class="language-rust" style="color: #24292e;">
+          <!-- <pre><code class="language-rust" style="color: #24292e;">
             <span style="color: #d73a49;">fn</span> <span style="color: #24292e;">main</span>() {
               <span style="color: #d73a49;">let</span> x1: <span style="color: #005cc5;">f64</span> = <span
                   style="color: #005cc5;">2.0</span>;
@@ -291,14 +315,14 @@
               <span style="color: #d73a49;">let</span> derivative = (x2 - x1) / <span style="color: #005cc5;">1.0</span>;
               <span style="color: #24292e;">println!</span>(<span style="color: #032f62;">"Derivative: {}"</span>, derivative);
             }
-          </code></pre>
+          </code></pre> -->
           <img src="assets/clips/gifs/1.x1->x2.gif"
                class="interpolation-image"/>
         </div>
         <h3 class="title is-4">Step 2</h3>
         <div class="content has-text-justified">
           <p>
-            Select an affine space for computing a single JVP.
+            Instead of updating all the affine spaces by computing the jacobian-vector product in each column, which incurs function calls many times and can be computationally expensive, we just update one jacobian-vector product and its associated affine space as illustrated by the purple line.
           </p>
           <img src="assets/clips/gifs/2.select_space.gif"
                class="interpolation-image"/>
@@ -306,55 +330,66 @@
         <h3 class="title is-4">Step 3</h3>
         <div class="content has-text-justified">
           <p>
-            Compute the JVP. The true derivative lies somewhere in this affine space.
+            Update this space while leave the others intersecting at the previous derivative solution, The true derivative (yellow dot) must lie in the updated affine space (purple line).
           </p>
           <img src="assets/clips/gifs/3.move-space.gif"
                class="interpolation-image"/>
         </div>
-        <h3 class="title is-4">Step 4</h3>
+        <h3 class="title is-4"><b>Step 4</b></h3>
         <div class="content has-text-justified">
           <p>
-            Perform constrained optimization to find the closest point on the current space to other affine spaces.
+            Here comes our key insight: By leveraging the prior affine spaces that left unupdated and the updated one, we can formulate the derivative approximation problem as a constrained least-square optimization.
           </p>
+          $$
+          \frac{\partial f}{\partial x}|_{x_{k}} \approx \text{argmin}_{D^T} || \Delta X^TD^T - \hat{\Delta F} ||_F^2 \ \;\text{subject to}\; \ \Delta x_i^T D^T = \Delta f_i^T
+          $$
+          <p>\(\hat{\Delta F}\) corresponds to the prior affine spaces, while \(\Delta f_i\) in the constraint corresponds to the updated affine space.</p>
+          <p>In the visualization, solving this optimization problem means finding the point on the updated affine space (purple line) that minimizes the Euclidean distances to other unupdated affine spaces. The result \(D\) satisfies the following properties:</p>
+          <ul>
+            <li>on the updated affine space</li>
+            <li>best aligns the other prior affine spaces</li>
+          </ul>
+          <p>  In our paper, we derive the closed form solution (green dot) of this optimization using its KKT system:</p>
+          $$
+          \begin{aligned}
+            {D^*}^T
+            &= A^{-1}\Bigl(I - s_i^{-1}\,\Delta x_i\,\Delta x_i^T\,A^{-1}\Bigr)
+               \;2\,\Delta X\,\hat{\Delta F}^T
+               + s_i^{-1}\,A^{-1}\,\Delta x_i\,\Delta f_i^T\\
+            A &= 2\,\Delta X\,\Delta X^T\\
+            s_i &= \Delta x_i^T\,A^{-1}\,\Delta x_i.
+          \end{aligned}
+          $$
           <img src="assets/clips/gifs/4.find-D.gif"
                class="interpolation-image"/>
         </div>
-        <h3 class="title is-4">Last step</h3>
+        <h3 class="title is-4">Step 5</h3>
         <div class="content has-text-justified">
           <p>
-            Update the entire F matrix.
+            The solution is then used to update other affine spaces that all spaces intersect at $D$.
           </p>
+          $$
+          \hat{\Delta F} = D^* \Delta X
+          $$
           <img src="assets/clips/gifs/5.move-others.gif"
                class="interpolation-image"/>
         </div>
-        <h3 class="title is-4">The next derivative</h3>
+        <h3 class="title is-4">Step 6-8</h3>
         <div class="content has-text-justified">
           <p>
-            We can repeat the above steps to compute the next derivative.
+            The process iterates, cycling through the web of affine spaces, interleaving updates the approximates of derivative and \(\hat{\Delta F}\) for each new input in the sequence.  
           </p>
           <img src="assets/clips/gifs/6.x2.gif"
                class="interpolation-image">
-        </div>
-        <h3 class="title is-4">And the next</h3>
-        <div class="content has-text-justified">
-          <p>
-
-          </p>
           <img src="assets/clips/gifs/7.x3.gif"
                class="interpolation-image"/>
-        </div>
-        <h3 class="title is-4">And the next</h3>
-        <div class="content has-text-justified">
-          <p>
-
-          </p>
           <img src="assets/clips/gifs/8.x4.gif"
                class="interpolation-image"/>
         </div>
-        <h3 class="title is-4">Error correction</h3>
+        <h3 class="title is-4">Step 9</h3>
         <div class="content has-text-justified">
           <p>
-            When our error detector asserts a high possible error, we repeat the whole process for another JVP.
+            Our approach is also equipped with a error detection and correction mechanism. If we detect the approximation (green dot) is too far away from the ground truth (yellow dot), it can spend additional iterations on the current input until certain accuracy is achieved. If all affine spaces are updated with groud truth jacobian-vector products, the solution will always match the ground truth. 
           </p>
           <img src="assets/clips/gifs/9.-error-correction.gif"
                class="interpolation-image"/>
@@ -363,20 +398,37 @@
 
         <h2 class="title is-3">Results</h2>
         <h3 class="title is-4">Evaluation 1</h3>
-        <p>
-          Our method significantly improves the performance of derivative computation on small to medium-sized functions, i.e., functions with approximately fewer than 500 combined inputs and outputs.
-        </p><br/>
-        <img src="assets/comparison_plot.jpg"
-             class="interpolation-image"/>
-        <h3 class="title is-4">Evaluation 2</h3>
-        <p>
-          Furthermore, we show that this method can be effectively applied in a robotics optimization context.
-        </p>
-        <div class="publication-video">
-          <video autoplay muted loop playsinline controls style="width:100%; height:auto;">
-            <source src="assets/eval2.mov" type="video/mp4">
-          </video>
+        <div class="content has-text-justified">
+          <p>
+            The evalution bechmarks our WASP method against four other popular or related implementations of computing derivatives. The condtions are:
+          </p>
+          <ul>
+            <li>Reverse-mode automatic differentiation with PyTorch backend (abbreviated as RAD-PyTorch)</li>
+            <li>Finite-differencing with NumPy backend (abbreviated as FD)</li>
+            <li>Simultaneous Perturbation Stochastic Approximation with NumPy backend (abbreviated as SPSA)</li>
+            <li>Web of Affine Spaces Optimization with orthonormal \(\Delta X\) matrix and NumPy backend (abbreviated as WASP-O).</li>
+            <li>Web of Affine Spaces Optimization with random, non-orthonormal \(\Delta X\) matrix and NumPy backend (abbreviated as WASP-NO).</li>
+          </ul>
+          <p>
+            Through evaluating these conditions on computing derivatives of nested sine-cosine functions that resemble forward kinematic functions in robotics, we show that our methods offer significant speed-up while at the same time maintains reasonable accuracy.
+          </p>
+          <p>
+            For readers interested in further insights, supplementary results are provided in the Appendix (§X-C) in the paper. Conditions in this supplemental section include JAX implementations compiled for both CPU and GPU, as well as Rust-based implementations, allowing modifications, optimizations, and compilations to strive for maximum possible performance for each condition.
+          </p>
+          <img src="assets/comparison_plot.jpg"
+              class="interpolation-image"/>
         </div>
+        <h3 class="title is-4">Evaluation 2</h3>
+          <div class="content has-text-justified">
+            <p>
+              The evaluation involves using a root-finding procedure to get a quadruped robot to match its feet and endeffector to specified poses. Our WASP conditions converge much more quickly than the alternative approaches. As the analysis in our paper would suggest, the WASP procedure with an orthonormal \(\Delta X\) basis converges even faster and more stably. 
+            </p>
+            <div class="publication-video">
+              <video autoplay muted loop playsinline controls style="width:100%; height:auto;">
+                <source src="assets/eval2.mov" type="video/mp4">
+              </video>
+            </div>
+          </div>
         <!-- Re-rendering. -->
 <!--        <h3 class="title is-4">Re-rendering the input video</h3>-->
 <!--        <div class="content has-text-justified">-->
