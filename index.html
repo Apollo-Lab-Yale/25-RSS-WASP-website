@@ -246,12 +246,43 @@
             <li>Outputs: a sequence of approximate derivatives at given inputs, \(\hat{\frac{\partial f}{\partial x}}|_{x_{k}}, \hat{\frac{\partial f}{\partial x}}|_{x_{k+1}},\hat{\frac{\partial f}{\partial x}}|_{x_{k+2}} \cdots\)</li>
             <li>What we achieved: Bt default, derivative computation for each input only requires updating the jacobian-vector product on one tangent direction regardless of the dimension of the function's inputs and outpus. </li>
           </ul>
+          <img src="assets/clips/gifs/optimize.gif"
+            class="interpolation-image"/>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Explanation of Our Method</h2>
+        <div class="content has-text-justified">
+          <p>
+            Think derivate as  a map from a matrix of tangents \(\Delta X\) to a matrix of jacobian-vector product \(\Delta F\)
+          </p>
+          <ul>
+            <li>\(\frac{\partial f}{\partial x}|_{x_{k}} \Delta X=\Delta F\)</li>
+            <li>Each column of \(\Delta X\) and \(\Delta F\) is independent. \(\frac{\partial f}{\partial x}|_{x_{k}} [\Delta x_1 | \Delta x_2|...|\Delta x_r]=[\Delta f_1 | \Delta f_2|...|\Delta f_r]\)</li>
+            <li>Given \(\Delta X\) and \(\Delta F\) matrices of sufficient rank and size, we can directly solve the derivative \((\frac{\partial f}{\partial x}|_{x_{k}})^T=(\Delta X^T)^\dagger\Delta F^T\)</li>
+          </ul>
+          <img src="assets/clips/gifs/spaces.gif"
+            class="interpolation-image"/>
+          <p>Visualization of the solution: </p>
+          <ul>
+            <li>Dark blue lines represent the <b>affine spaces</b> created from the corresponding columns from \((\Delta X^T)^\dagger\Delta F^T\).</li>
+            <li>The \(Z\) matrices are null space basis matrices, and \(Y\) matrices represent free variables that parameterize the affine spaces.</li>
+            <li>The derivative must reside in the intersection of these affine spaces as illustrated by the yellow dot.</li>
+          </ul>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 
 <section class="section">
