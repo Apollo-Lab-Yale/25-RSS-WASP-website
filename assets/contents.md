@@ -53,3 +53,27 @@
 - Step 6-8: The process iterates, cycling through the web of affine spaces, interleaving updates the approximates of derivative and $\hat{\Delta F}$ for each new input in the sequence.  
 
 - Step 9: Our approach is also equipped with a error detection and correction mechanism. If we detect the approximation (green dot) is too far away from the ground truth (yellow dot), it can spend additional iterations on the current input until certain accuracy is achieved. If all affine spaces are updated with groud truth jacobian-vector products, the solution will always match the ground truth. 
+
+
+
+#### 3. Results
+
+- Eval 1
+
+  The evalution bechmarks our WASP method against four other popular or related implementations of computing derivatives. The condtions are:
+
+  - Reverse-mode automatic differentiation with PyTorch backend (abbreviated as RAD-PyTorch)
+  - Finite-differencing with NumPy backend (abbreviated as FD)
+  - Simultaneous Perturbation Stochastic Approximation with NumPy backend (abbreviated as SPSA)
+  - Web of Affine Spaces Optimization with orthonormal $\Delta X$ matrix and NumPy backend (abbreviated as WASP-O).
+  - Web of Affine Spaces Optimization with random, non-orthonormal $Delta X$ matrix and NumPy backend (abbreviated as WASP-NO).
+
+  Through evaluating these conditions on computing derivatives of nested sine-cosine functions that resemble forward kinematic functions in robotics, we show that our methods offer significant speed-up while at the same time maintains reasonable accuracy. 
+
+  For readers interested in further insights, supplementary results are provided in the Appendix (§X-C) in the paper. Conditions in this supplemental section include JAX implementations compiled for both CPU and GPU, as well as Rust-based implementations, allowing modifications, optimizations, and compilations to strive for maximum possible performance for each condition.
+
+  
+
+- Eval 2
+
+  The evaluation involves using a root-finding procedure to get a quadruped robot to match its feet and endeffector to specified poses. Our WASP conditions converge much more quickly than the alternative approaches. As the analysis in our paper would suggest, the WASP procedure with an orthonormal $\Delta X$ basis converges even faster and more stably. 
