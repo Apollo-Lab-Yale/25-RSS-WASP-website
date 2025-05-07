@@ -77,3 +77,190 @@
 - Eval 2
 
   The evaluation involves using a root-finding procedure to get a quadruped robot to match its feet and endeffector to specified poses. Our WASP conditions converge much more quickly than the alternative approaches. As the analysis in our paper would suggest, the WASP procedure with an orthonormal $\Delta X$ basis converges even faster and more stably. 
+
+
+
+#### 4. Code Snippets 
+
+- Python
+
+  ```python
+  """
+  Minimal demonstration of the WASP derivative-estimation algorithm using a
+  NumPy backend.
+  
+  The routine can also be executed on alternative array libraries (e.g.,
+  PyTorch, JAX) through TensorLy’s backend abstraction.
+  
+  For the full reference implementation, see
+  https://github.com/Apollo-Lab-Yale/apollo-py/blob/main/apollo_toolbox_py/apollo_py/apollo_py_differentiation/apollo_py_differentiation_tensorly/derivative_method_tensorly.py
+  """
+  
+  from typing import Callable
+  import numpy as np
+  
+  class DerivativeMethodWASP:
+      def __init__(self, n: int, m: int, orthonormal: bool = True, d_ell=0.3, d_theta=0.3):
+          """
+          Parameters
+          ----------
+          n : int
+              Input dimensionality of the target function *f*.
+          m : int
+              Output dimensionality of *f*.
+          orthonormal : bool, optional
+              If ``True`` (recommended), the finite-difference perturbations Δx are kept
+              orthonormal. Set to ``False`` only for benchmarking or ablation studies.
+          d_ell : float, optional
+              Length-norm threshold used in the WASP error test (default = 0.3).
+          d_theta : float, optional
+              Angular threshold (radians) used in the WASP error test (default = 0.3).
+          """
+          
+          self.n = n
+          self.m = m
+          self.orthonormal = orthonormal
+          self.cache = WASPCache(n, m, orthonormal)
+          self.num_f_calls = 0
+          self.d_theta = d_theta
+          self.d_ell = d_ell
+          self.fixed_i = None
+  
+      def clear_cache(self):
+          self.cache.i = 0
+          self.cache.delta_f_t = np.eye(self.n, self.m)
+  
+      def derivative_raw(self, f:Callable[[np.ndarray], np.ndarray], x: np.ndarray) -> np.ndarray:
+          """
+          Compute the raw Jacobian of *f* at *x* via the WASP scheme.
+  
+          Parameters
+          ----------
+          f : Callable[[numpy.ndarray], numpy.ndarray]
+              The vector-valued function whose derivative is sought.
+          x : numpy.ndarray
+              Evaluation point, shape ``(n,)`` or ``(n, 1)`` depending on the backend.
+  
+          Returns
+          -------
+          numpy.ndarray
+              The Jacobian matrix ``df/dx`` at *x*, shape ``(m, n)``.
+          """
+  
+          self.num_f_calls = 0
+          f_k = f(x)
+          self.num_f_calls += 1
+          epsilon = 0.00000001
+          cache = self.cache
+  
+          while True:
+              if self.fixed_i is None:
+                  i = self.cache.i
+              else:
+                  i = self.fixed_i
+  
+              delta_x_i = cache.delta_x[:, i]
+              x_k_plus_delta_x_i = x + epsilon * delta_x_i
+              f_k_plus_delta_x_i = f.call(x_k_plus_delta_x_i)
+              self.num_f_calls += 1
+  
+              delta_f_i = (f_k_plus_delta_x_i - f_k) / epsilon
+              delta_f_i_hat = cache.delta_f_t[i, :]
+              return_result = close_enough(delta_f_i, delta_f_i_hat, self.d_theta, self.d_ell)
+  
+              # Update delta_f_t with the new delta_f_i
+              cache.delta_f_t[i]= delta_f_i
+  
+              # Get optimization matrices
+              c_1_mat = cache.c_1[i]
+              c_2_mat = cache.c_2[i]
+              delta_f_t = cache.delta_f_t
+  
+              # Reshape for matrix multiplication
+              delta_f_i = np.reshape(delta_f_i, (-1, 1))
+  
+              # Calculate the closed-form solution
+              d_t_star = c_1_mat @ delta_f_t + c_2_mat @ delta_f_i.T
+              d_star = d_t_star.T
+  
+              # Update delta_f_t for next iteration
+              tmp = d_star @ cache.delta_x
+              cache.delta_f_t = tmp.T
+  
+              # Update i for next iteration
+              new_i = i + 1
+              if new_i >= len(x):
+                  new_i = 0
+              cache.i = new_i
+  
+              # Return if accurate enough or all directions checked
+              if return_result or self.num_f_calls == len(x) + 1:
+                  return d_star
+  
+  class WASPCache:
+      def __init__(self, n: int, m: int, orthonormal_delta_x: bool = True):
+          self.i = 0
+          self.delta_f_t = np.eye(n, m)
+          delta_x = get_tangent_matrix(n, orthonormal_delta_x)
+          self.c_1 = []
+          self.c_2 = []
+  
+          # Calculate A and its inverse
+          a_mat = 2.0 * delta_x @ delta_x.T
+          a_inv_mat = np.linalg.inv(a_mat)
+          eye = np.eye(n, n)
+  
+          # Precompute c_1 and c_2 matrices for each dimension
+          for i in range(n):
+              delta_x_i = delta_x[:, i:i + 1]
+              s_i = delta_x_i.T @ a_inv_mat @ delta_x_i
+              s_i_inv = 1.0 / s_i
+  
+              # Term 1 of the closed-form solution
+              c_1_mat = a_inv_mat @ (eye - s_i_inv * delta_x_i @ delta_x_i.T @ a_inv_mat) @ (2.0 * delta_x)
+  
+              # Term 2 of the closed-form solution
+              c_2_mat = s_i_inv * a_inv_mat @ delta_x_i
+  
+              self.c_1.append(c_1_mat)
+              self.c_2.append(c_2_mat)
+  
+          self.delta_x = delta_x
+  
+  def get_tangent_matrix(n: int, orthonormal: bool) -> np.ndarray:
+      t = np.random.uniform(-1, 1, (n, n))
+      if orthonormal:
+          U, S, VT = np.linalg.svd(t, full_matrices=True)
+          delta_x = U @ VT
+          return delta_x
+      else:
+          return t
+  
+  def close_enough(a: np.ndarray, b: np.ndarray, d_theta: float, d_ell: float):
+      a_n = np.linalg.norm(a)
+      b_n = np.linalg.norm(b)
+  
+      if a_n == 0.0 or b_n == 0.0:
+          return False
+  
+      tmp = np.abs((np.dot(a, b) / (a_n * b_n)) - 1.0)
+      if tmp > d_theta:
+          return False
+  
+      if not b_n == 0.0:
+          tmp1 = np.abs((a_n / b_n) - 1.0)
+      else:
+          tmp1 = 10000000.0
+      if not a_n == 0.0:
+          tmp2 = np.abs((b_n / a_n) - 1.0)
+      else:
+          tmp2 = 10000000.0
+  
+      if min(tmp1, tmp2) > d_ell:
+          return False
+  
+      return True
+  
+  ```
+
+  
