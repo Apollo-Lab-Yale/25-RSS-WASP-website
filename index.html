@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="description"
-        content="Deformable Neural Radiance Fields creates free-viewpoint portraits (nerfies) from casually captured videos.">
-  <meta name="keywords" content="Nerfies, D-NeRF, NeRF">
+        content="Coherance-based Approximate Derivatives via Web of Affine Spaces Optimization">
+  <meta name="keywords" content="Derivative Approximation, WASP">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WASP</title>
 
@@ -40,6 +40,59 @@
   <script src="./static/js/bulma-slider.min.js"></script>
   <script src="./static/js/index.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    .tab-buttons {
+      display: flex;
+      background-color: #f1f1f1;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .tab-button {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+      position: relative;
+    }
+
+    .tab-button.active {
+      background-color: #fff;
+      border-bottom: 2px solid #4285f4;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    pre {
+      margin: 0;
+      padding: 20px;
+      overflow-x: auto;
+      background-color: #282c34 !important;
+    }
+
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: #f8f8f2 !important;
+    }
+
+    /* Syntax highlighting */
+    .keyword { color: #ff79c6; }
+    .function { color: #8be9fd; }
+    .string { color: #f1fa8c; }
+    .comment { color: #6272a4; }
+    .number { color: #bd93f9; }
+  </style>
 </head>
 <body>
 
@@ -71,7 +124,7 @@
             <div class="publication-links">
               <!-- PDF Link. -->
               <span class="link-block">
-                <a href="https://arxiv.org/"
+                <a href="https://arxiv.org/pdf/2504.18790"
                    class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                       <i class="fas fa-file-pdf"></i>
@@ -80,7 +133,7 @@
                 </a>
               </span>
               <span class="link-block">
-                <a href="https://arxiv.org"
+                <a href="https://arxiv.org/abs/2504.18790"
                    class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                       <i class="ai ai-arxiv"></i>
@@ -516,16 +569,282 @@
   </div>
 </section>
 
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Code Snippet</h2>
+        <div class="tab-buttons">
+          <button class="tab-button active" onclick="openTab(event, 'python')">Python</button>
+          <button class="tab-button" onclick="openTab(event, 'rust')">Rust</button>
+        </div>
+
+        <div id="python" class="tab-content active">
+            <pre><code>
+<span class="keyword">class</span> <span class="function">DerivativeMethodWASP</span>(DerivativeMethodTensorly):
+    <span class="keyword">def</span> <span class="function">__init__</span>(self, n: int, m: int, backend: Backend, orthonormal: bool = True, d_ell=0.3, d_theta=0.3,
+                 device: Device = Device.CPU,
+                 dtype: DType = DType.Float64):
+        tl.set_backend(backend.to_string())
+        self.n = n
+        self.m = m
+        self.orthonormal = orthonormal
+        self.backend = backend
+        self.device = device
+        self.dtype = dtype
+        self.cache = WASPCache(n, m, orthonormal, device, dtype)
+        self.num_f_calls = 0
+        self.d_theta = d_theta
+        self.d_ell = d_ell
+        self.fixed_i = None
+
+    <span class="keyword">def</span> <span class="function">clear_cache</span>(self):
+        tl.set_backend(self.backend.to_string())
+        self.cache.i = 0
+        self.cache.delta_f_t = T2.new(np.eye(self.n, self.m), device=self.device, dtype=self.dtype)
+        <span class="comment"># self.cache = WASPCache(self.n, self.m, self.orthonormal, self.device, self.dtype)</span>
+
+    <span class="keyword">def</span> <span class="function">allowable_backends</span>(self) -> List[Backend]:
+        <span class="keyword">return</span> [Backend.Numpy, Backend.JAX, Backend.PyTorch]
+
+    <span class="keyword">def</span> <span class="function">default_backend</span>(self) -> Backend:
+        <span class="keyword">return</span> Backend.Numpy
+
+    <span class="keyword">def</span> <span class="function">derivative_raw</span>(self, f: FunctionTensorly, x: tl.tensor) -> tl.tensor:
+        self.num_f_calls = 0
+        f_k = f.call(x)
+        self.num_f_calls += 1
+        epsilon = 0.00000001
+        cache = self.cache
+
+        <span class="keyword">while</span> True:
+            <span class="keyword">if</span> self.fixed_i <span class="keyword">is</span> None:
+                i = self.cache.i
+            <span class="keyword">else</span>:
+                i = self.fixed_i
+
+            delta_x_i = cache.delta_x[:, i]
+            x_k_plus_delta_x_i = x + epsilon * delta_x_i
+            f_k_plus_delta_x_i = f.call(x_k_plus_delta_x_i)
+            self.num_f_calls += 1
+
+            delta_f_i = (f_k_plus_delta_x_i - f_k) / epsilon
+            delta_f_i_hat = cache.delta_f_t[i, :]
+            return_result = close_enough(delta_f_i, delta_f_i_hat, self.d_theta, self.d_ell)
+
+            <span class="comment"># Update delta_f_t with the new delta_f_i</span>
+            cache.delta_f_t = T2.set_and_return(cache.delta_f_t, (i, slice(None)), delta_f_i)
+
+            <span class="comment"># Get optimization matrices</span>
+            c_1_mat = cache.c_1[i]
+            c_2_mat = cache.c_2[i]
+            delta_f_t = cache.delta_f_t
+
+            <span class="comment"># Reshape for matrix multiplication</span>
+            delta_f_i = tl.reshape(delta_f_i, (-1, 1))
+
+            <span class="comment"># Calculate the closed-form solution</span>
+            d_t_star = c_1_mat @ delta_f_t + c_2_mat @ delta_f_i.T
+            d_star = d_t_star.T
+
+            <span class="comment"># Update delta_f_t for next iteration</span>
+            tmp = d_star @ cache.delta_x
+            cache.delta_f_t = tmp.T
+
+            <span class="comment"># Update i for next iteration</span>
+            new_i = i + 1
+            <span class="keyword">if</span> new_i >= len(x):
+                new_i = 0
+            cache.i = new_i
+
+            <span class="comment"># Return if accurate enough or all directions checked</span>
+            <span class="keyword">if</span> return_result <span class="keyword">or</span> self.num_f_calls == len(x) + 1:
+                <span class="keyword">return</span> d_star
+
+<span class="keyword">class</span> <span class="function">WASPCache</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(self, n: int, m: int, orthonormal_delta_x: bool = True, device: Device = Device.CPU,
+                 dtype: DType = DType.Float64):
+        self.i = 0
+        self.delta_f_t = T2.new(np.eye(n, m), device=device, dtype=dtype)
+        delta_x = get_tangent_matrix(n, orthonormal_delta_x, device, dtype)
+        self.c_1 = []
+        self.c_2 = []
+
+        <span class="comment"># Calculate A and its inverse</span>
+        a_mat = 2.0 * delta_x @ delta_x.T
+        a_inv_mat = T2.inv(a_mat)
+        eye = T2.new(np.eye(n, n), device=device, dtype=dtype)
+
+        <span class="comment"># Precompute c_1 and c_2 matrices for each dimension</span>
+        <span class="keyword">for</span> i <span class="keyword">in</span> range(n):
+            delta_x_i = delta_x[:, i:i + 1]
+            s_i = delta_x_i.T @ a_inv_mat @ delta_x_i
+            s_i_inv = 1.0 / s_i
+
+            <span class="comment"># Term 1 of the closed-form solution</span>
+            c_1_mat = a_inv_mat @ (eye - s_i_inv * delta_x_i @ delta_x_i.T @ a_inv_mat) @ (2.0 * delta_x)
+
+            <span class="comment"># Term 2 of the closed-form solution</span>
+            c_2_mat = s_i_inv * a_inv_mat @ delta_x_i
+
+            self.c_1.append(c_1_mat)
+            self.c_2.append(c_2_mat)
+
+        self.delta_x = delta_x
+            </code></pre>
+        </div>
+        <div id="rust" class="tab-content">
+          <pre><code>
+<span class="keyword">use</span> std::sync::{Arc, RwLock};
+
+<span class="keyword">pub struct</span> <span class="function">DerivativeMethodWASP</span> {
+    cache: RwLock<WASPCache>,
+    num_f_calls: RwLock<usize>,
+    d_theta: f64,
+    d_ell: f64
+}
+
+<span class="keyword">impl</span> DerivativeMethodWASP {
+    <span class="keyword">pub fn</span> <span class="function">new</span>(n: usize, m: usize, orthonormal_delta_x: bool, d_theta: f64, d_ell: f64) -> Self {
+        Self {
+            cache: RwLock::new(WASPCache::new(n, m, orthonormal_delta_x)),
+            num_f_calls: RwLock::new(0),
+            d_theta,
+            d_ell,
+        }
+    }
+
+    <span class="keyword">pub fn</span> <span class="function">new_default</span>(n: usize, m: usize) -> Self {
+        Self::new(n, m, true, 0.3, 0.3)
+    }
+
+    <span class="keyword">pub fn</span> <span class="function">num_f_calls</span>(&self) -> usize {
+        <span class="keyword">return</span> self.num_f_calls.read().unwrap().clone()
+    }
+}
+
+<span class="keyword">impl</span> DerivativeMethodNalgebraTrait <span class="keyword">for</span> DerivativeMethodWASP {
+    <span class="keyword">fn</span> <span class="function">derivative</span>(&self, f: &Arc<dyn FunctionNalgebraTrait>, x: &V) -> (V, M) {
+        <span class="keyword">let</span> <span class="keyword">mut</span> num_f_calls = 0;
+        <span class="keyword">let</span> f_k = f.call(x);
+        num_f_calls += 1;
+        <span class="keyword">let</span> epsilon = 0.000001;
+        <span class="keyword">let</span> <span class="keyword">mut</span> cache = self.cache.write().unwrap();
+        <span class="keyword">let</span> n = x.len();
+
+        <span class="keyword">loop</span> {
+            <span class="keyword">let</span> i = cache.i.clone();
+            <span class="keyword">let</span> delta_x_i = cache.delta_x.get_column(i);
+            <span class="keyword">let</span> x_k_plus_delta_x_i = x + epsilon*&delta_x_i;
+            <span class="keyword">let</span> f_k_plus_delta_x_i = f.call(&x_k_plus_delta_x_i);
+            num_f_calls += 1;
+            <span class="keyword">let</span> delta_f_i = (&f_k_plus_delta_x_i - &f_k) / epsilon;
+            <span class="keyword">let</span> delta_f_i_hat = cache.delta_f_t.get_row(i);
+            <span class="keyword">let</span> return_result = close_enough(&delta_f_i, &delta_f_i_hat, self.d_theta, self.d_ell);
+
+            cache.delta_f_t.set_row(i, &delta_f_i.transpose());
+            <span class="keyword">let</span> c_1_mat = &cache.c_1[i];
+            <span class="keyword">let</span> c_2_mat = &cache.c_2[i];
+            <span class="keyword">let</span> delta_f_t = &cache.delta_f_t;
+            <span class="keyword">let</span> d_t_star = c_1_mat*delta_f_t + c_2_mat*delta_f_i.transpose();
+            <span class="keyword">let</span> d_star = d_t_star.transpose();
+            <span class="keyword">let</span> tmp = &d_star * &cache.delta_x;
+            cache.delta_f_t = tmp.transpose();
+
+            <span class="keyword">let</span> <span class="keyword">mut</span> new_i = i + 1;
+            <span class="keyword">if</span> new_i >= n { new_i = 0; }
+            cache.i = new_i;
+
+            <span class="keyword">if</span> return_result {
+                *self.num_f_calls.write().unwrap() = num_f_calls;
+                <span class="keyword">return</span> (f_k, d_star);
+            }
+        }
+    }
+}
+
+<span class="comment">#[derive(Clone, Debug)]</span>
+<span class="keyword">pub struct</span> <span class="function">WASPCache</span> {
+    <span class="keyword">pub</span> i: usize,
+    <span class="keyword">pub</span> delta_f_t: M,
+    <span class="keyword">pub</span> delta_x: M,
+    <span class="keyword">pub</span> c_1: Vec<M>,
+    <span class="keyword">pub</span> c_2: Vec<V>
+}
+
+<span class="keyword">impl</span> WASPCache {
+    <span class="keyword">pub fn</span> <span class="function">new</span>(n: usize, m: usize, orthonormal_delta_x: bool) -> Self {
+        <span class="keyword">let</span> delta_f_t = M::identity(n, m);
+        <span class="keyword">let</span> delta_x = get_tangent_matrix(n, orthonormal_delta_x);
+        <span class="keyword">let</span> <span class="keyword">mut</span> c_1 = vec![];
+        <span class="keyword">let</span> <span class="keyword">mut</span> c_2 = vec![];
+
+        <span class="keyword">let</span> a_mat = 2.0 * &delta_x * &delta_x.transpose();
+        <span class="keyword">let</span> a_inv_mat = a_mat.try_inverse().unwrap();
+
+        <span class="keyword">for</span> i <span class="keyword">in</span> 0..n {
+            <span class="keyword">let</span> delta_x_i = V::new(delta_x.column(i).as_slice());
+            <span class="keyword">let</span> s_i = (delta_x_i.transpose() * &a_inv_mat * &delta_x_i)[(0,0)];
+            <span class="keyword">let</span> s_i_inv = 1.0 / s_i;
+            <span class="keyword">let</span> c_1_mat = &a_inv_mat * (M::identity(n, n) - s_i_inv * &delta_x_i
+                                                        * delta_x_i.transpose() * &a_inv_mat) * 2.0 * &delta_x;
+            <span class="keyword">let</span> c_2_mat = s_i_inv * &a_inv_mat * delta_x_i;
+            c_1.push(c_1_mat);
+            c_2.push(c_2_mat);
+        }
+
+        <span class="keyword">return</span> Self {
+            i: 0,
+            delta_f_t,
+            delta_x,
+            c_1,
+            c_2,
+        }
+    }
+}
+          </code></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  function openTab(evt, tabName) {
+    // Declare all variables
+    let i, tabContent, tabButtons;
+
+    // Get all elements with class="tab-content" and hide them
+    tabContent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabContent.length; i++) {
+      tabContent[i].className = tabContent[i].className.replace(" active", "");
+    }
+
+    // Get all elements with class="tab-button" and remove the class "active"
+    tabButtons = document.getElementsByClassName("tab-button");
+    for (i = 0; i < tabButtons.length; i++) {
+      tabButtons[i].className = tabButtons[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    document.getElementById(tabName).className += " active";
+    evt.currentTarget.className += " active";
+  }
+</script>
 
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
     <h2 class="title">BibTeX</h2>
-<!--    <pre><code>@article{park2021nerfies,-->
-<!--  author    = {Park, Keunhong and Sinha, Utkarsh and Barron, Jonathan T. and Bouaziz, Sofien and Goldman, Dan B and Seitz, Steven M. and Martin-Brualla, Ricardo},-->
-<!--  title     = {Nerfies: Deformable Neural Radiance Fields},-->
-<!--  journal   = {ICCV},-->
-<!--  year      = {2021},-->
-<!--}</code></pre>-->
+    <pre><code>
+@misc{rakita2025coherencebasedapproximatederivativesweb,
+      title={Coherence-based Approximate Derivatives via Web of Affine Spaces Optimization},
+      author={Daniel Rakita and Chen Liang and Qian Wang},
+      year={2025},
+      eprint={2504.18790},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2504.18790},
+}
+    </code></pre>
   </div>
 </section>
 
@@ -534,10 +853,10 @@
   <div class="container">
     <div class="content has-text-centered">
       <a class="icon-link"
-         href="./static/videos/nerfies_paper.pdf">
+         href="https://arxiv.org/pdf/2504.18790">
         <i class="fas fa-file-pdf"></i>
       </a>
-      <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
+      <a class="icon-link" href="https://github.com/Apollo-Lab-Yale" class="external-link" disabled>
         <i class="fab fa-github"></i>
       </a>
     </div>
