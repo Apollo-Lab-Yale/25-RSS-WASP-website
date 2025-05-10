@@ -116,7 +116,7 @@
           d_theta : float, optional
               Angular threshold (radians) used in the WASP error test (default = 0.3).
           """
-          
+  
           self.n = n
           self.m = m
           self.orthonormal = orthonormal
@@ -144,7 +144,7 @@
           Returns
           -------
           numpy.ndarray
-              The Jacobian matrix ``df/dx`` at *x*, shape ``(n, m)``.
+              The Jacobian matrix ``df/dx`` at *x*, shape ``(m, n)``.
           """
   
           self.num_f_calls = 0
@@ -260,6 +260,100 @@
           return False
   
       return True
+  
+  
+  if __name__ == "__main__":
+      """
+      The nested sine-cosine benchmark function used in the paper
+      """
+      class BenchmarkFunction:
+          def __init__(self, n: int, m: int, num_operations: int):
+              self.n = n
+              self.m = m
+              self.num_operations = num_operations
+              self.r = []
+              self.s = []
+              for i in range(m):
+                  self.r.append([np.random.randint(0, n - 1) for _ in range(num_operations + 1)])
+                  self.s.append([np.random.randint(0, 1) for _ in range(num_operations)])
+  
+          def __call__(self, x: np.ndarray) -> np.ndarray:
+              out = []
+  
+              for i in range(self.m):
+                  rr = self.r[i]
+                  ss = self.s[i]
+                  tmp = x[rr[0]]
+                  for j in range(self.num_operations):
+                      if ss[j] == 0:
+                          tmp = np.sin(np.cos(tmp) + x[rr[j + 1]])
+                      elif ss[j] == 1:
+                          tmp = np.cos(np.sin(tmp) + x[rr[j + 1]])
+                      else:
+                          raise ValueError("Operation not supported")
+                  out.append(tmp)
+  
+              return np.array(out)
+  
+          def input_dim(self):
+              return self.n
+  
+          def output_dim(self):
+              return self.m
+  
+  
+      """
+      Get a list of random inputs
+      """
+      def get_random_walk(n: int, num_waypoints: int, step_length: float):
+          out = []
+  
+          curr = np.random.uniform(-1, 1, (n,))
+          for i in range(num_waypoints):
+              vel = np.random.uniform(-1, 1, (n,))
+              vel = step_length * (vel / np.linalg.norm(vel))
+              tmp = curr + vel
+              curr = tmp
+              out.append(tmp)
+  
+          return np.array(out)
+  
+      """
+      Compare the derivatives computed by WASP against that produced by finite differencing
+      """
+      class DerivativeMethodFD:
+          def __init__(self, n: int, m: int, epsilon=0.0000001):
+              self.n = n
+              self.m = m
+              self.epsilon = epsilon
+  
+          def derivative_raw(self, f:Callable[[np.ndarray], np.ndarray], x: np.ndarray) -> np.ndarray:
+              fx = f(x)
+              dfdx = np.zeros((self.m, self.n), dtype=x.dtype)
+  
+              for i in range(self.n):
+                  delta_x = np.zeros(self.n, dtype=x.dtype)
+                  delta_x[i] = self.epsilon
+                  x_delta_x = x + delta_x
+                  fh = f(x_delta_x)
+                  col = (fh - fx) / self.epsilon
+                  dfdx[:,i] = col
+              return dfdx
+  
+      f = BenchmarkFunction(3,2, 100)
+      inputs = get_random_walk(3, 10, 0.01)
+      wasp_engine = DerivativeMethodWASP(3, 2)
+      fd_engine = DerivativeMethodFD(3, 2)
+      eps  = 1e-10
+      for x in inputs:
+          y = f(x)
+          dydx_wasp = wasp_engine.derivative_raw(f, x)
+          dydx_fd = fd_engine.derivative_raw(f, x)
+          print(f"x={x}, f(x)={y}, dydx_wasp={dydx_wasp}, dydx_fd={dydx_fd}")
+          print(f"||dydx_wasp-dydx_fd||={np.linalg.norm(dydx_wasp-dydx_fd)}\n")
+  
+  
+  
   
   ```
 
